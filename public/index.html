@@ -1,0 +1,46 @@
+
+<body style="width:100%;height:100%;margin:0">
+	<iframe id="framed" style="width:100%;height:100%;border:0"></iframe>
+</body>
+
+<script>
+
+//var url = "http://ncase-proxy.herokuapp.com/ponywings.nutcasenightmare.com/game.php";
+var url = "http://ncase-proxy.herokuapp.com/playbiolab.com/index-mobile.html";
+//var url = "http://ncase-proxy.herokuapp.com/stuckiegamez.co.uk/gamez/ludumdare/ld25/";
+
+var xhr = new XMLHttpRequest();
+xhr.open("GET", url);
+xhr.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+            var response = xhr.responseText;
+
+            var ifrm = document.getElementById("framed");
+            ifrm = (ifrm.contentWindow) ? ifrm.contentWindow : (ifrm.contentDocument.document) ? ifrm.contentDocument.document : ifrm.contentDocument;
+			ifrm.document.open();
+			//ifrm.document.write("\<base href='http://ponywings.nutcasenightmare.com/'\>"+response);
+
+			var base = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+			ifrm.document.write(
+				
+				// The original game
+				"\<base href='http://ncase-proxy.herokuapp.com/playbiolab.com/'\>"+
+				//"\<base href='http://ncase-proxy.herokuapp.com/stuckiegamez.co.uk/gamez/ludumdare/ld25/'\>"+
+				response +
+				
+				// Local scripts
+				"\<script src='"+base+"/Toolbox.js'\>\<\/script\>"+
+				"\<script src='"+base+"/Wrapper.js'\>\<\/script\>"
+
+			);
+			ifrm.document.close();
+
+            //document.write("\<base href='http://playbiolab.com/'\>"+response+"\<script\>document.body.style.webkitTransform='rotate(180deg)'\<\/script\>");
+        }
+    }
+};
+xhr.send();
+
+</script>

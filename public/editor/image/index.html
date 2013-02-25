@@ -1,0 +1,203 @@
+<head>
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+    <link href="image.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+
+	<div id="draw_container">
+		<div id="draw_container2">
+			<canvas id="draw"></canvas>
+		</div>
+	</div>
+
+	<div id="sidebar">
+		<div class="panel">
+			<span id="title">COLOR</span><br/>
+			<div class="preview">
+				<div id="preview_bg"></div>
+				<div id="color_preview_color"></div>
+			</div>
+			&nbsp;&nbsp;red 
+			<input id="color_r" type="range" min="0" max="255" step="1" value="64"/><br/>
+			green 
+			<input id="color_g" type="range" min="0" max="255" step="1" value="128"/><br/>
+			&nbsp;blue 
+			<input id="color_b" type="range" min="0" max="255" step="1" value="192"/><br/>
+			alpha
+			<input id="color_a" type="range" min="0" max="1" step="0.01" value="1"/><br/>
+		</div>
+		<hr>
+		<div class="panel">
+			<span id="title">BRUSH</span><br/>
+			<div class="preview">
+				<div id="preview_bg"></div>
+			</div>
+			&nbsp;size
+			<input id="brush_size" type="range" min="0" max="30" step="1" value="5"/><br/>
+		</div>
+		<hr>
+		<div class="panel">
+			<span id="title">IMPORT</span><br/><br/>
+
+			1) <input id="import_url" placeholder="paste web url here" style="width:180px"/><br/>
+			&nbsp;&nbsp;&nbsp;<button id="import_url_submit">Import from Web URL</button><br/><br/>
+
+			2) <button id="import_desktop">Import from Desktop</button>
+			
+		</div>
+		<hr>
+		<div class="panel">
+			Zoom, Download...<br/>
+			<button id="DONE">DONE</button>
+		</div>
+	</div>
+
+</body>
+
+<!--div id="dataDOM" contenteditable></div>
+<button id="save">SAVE</button-->
+
+<script src="/Toolbox.js"></script>
+<script>
+
+var $ = function(id){ return document.getElementById(id); };
+
+////////////
+// COLOR //
+
+var color;
+function computeColor(){
+	var r = $("color_r").value;	
+	var g = $("color_g").value;
+	var b = $("color_b").value;
+	var a = $("color_a").value;
+	color = "rgba("+r+","+g+","+b+","+a+")"
+	$("color_preview_color").style.background = color;
+};
+computeColor();
+
+$("color_r").onchange = computeColor;
+$("color_g").onchange = computeColor;
+$("color_b").onchange = computeColor;
+$("color_a").onchange = computeColor;
+
+
+//////////////
+// IO LOGIC //
+
+
+var imageData;
+Toolbox.on("input",function(src){
+	
+	// If external, CORS proxy it.
+	var protocolIndex = src.indexOf("://");
+	if(protocolIndex>=0){
+		//src = "http://ncase-proxy.herokuapp.com/"+src.substr(protocolIndex+3);
+	}
+	console.log(src);
+
+	// Draw Image on Canvas
+	var img = new Image();
+	img.onload = function(){
+		
+		// Set dimensions
+		$("draw").width = img.width;
+		$("draw").height = img.height;
+		Mixin({
+			width: img.width+"px",
+			height: img.height+"px",
+			top: (-img.height/2)+"px",
+			left: (-img.width/2)+"px"
+		},$("draw").style);
+
+		// Draw
+		var ctx = $("draw").getContext('2d');
+		ctx.drawImage(img,0,0);
+
+		// Grayscale
+		var imgd = ctx.getImageData(0, 0, img.width, img.height);
+		var pix = imgd.data;
+		for (var i = 0, n = pix.length; i < n; i += 4) {
+			var grayscale = pix[i  ] * .3 + pix[i+1] * .59 + pix[i+2] * .11;
+			pix[i] = grayscale;   // red
+			pix[i+1] = grayscale;   // green
+			pix[i+2] = grayscale;   // blue
+		}
+		ctx.putImageData(imgd, 0, 0);
+
+	};
+	img.src = src;
+	imageData = src;
+
+});
+
+function output(){
+
+	var dataURL = $("draw").toDataURL();
+	Toolbox.tellParent("output",dataURL);
+
+	Mixin({
+		width: 0,
+		height: 0,
+		top: 0,
+		left: 0
+	},$("draw").style);
+
+};
+
+$("DONE").onclick = output;
+
+
+///////////////////
+// DRAWING LOGIC //
+
+var _mouse = {
+	pressed: false,
+	x:0, y:0,
+	lastX:0, lastY:0,
+};
+
+$("draw_container").addEventListener("mousedown",function(event){
+	_mouse.pressed = true;
+	_mouse.x = _mouse.lastX = 0;
+},false);
+
+$("draw_container").addEventListener("mousemove",function(event){
+	if(_mouse.pressed){
+	}
+},false);
+
+document.body.addEventListener("mouseup",function(){
+	_mouse.pressed = false;
+},false);
+
+
+/*
+$("save").onclick = function(){
+	var dataURI = $("dataDOM").innerHTML;
+
+	// If external, CORS proxy it.
+	var protocolIndex = dataURI.indexOf("://");
+	if(protocolIndex>=0){
+		dataURI = "http://ncase-proxy.herokuapp.com/"+dataURI.substr(protocolIndex+3);
+	}
+	console.log(dataURI);
+
+	working.src = dataURI;
+	Playwright.tellParent("output",working);
+};
+*/
+
+// TEST CASE //
+
+/*
+Playwright.emit("input", {
+	width:268, height:200,
+	src:"http://th01.deviantart.net/fs70/200H/i/2013/047/e/7/twilight_alicorn_by_a01421-d5v6kuj.png"
+} );
+*/
+
+//Toolbox.emit("input","http://localhost:5000/game/assets/blackBall.png");
+
+</script>
