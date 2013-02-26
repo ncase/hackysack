@@ -1,0 +1,44 @@
+<head>
+	<style>
+	body{
+		background: rgba(0,0,0,0.9);
+	}
+	img{
+		margin:20px auto;
+		display: block;
+	}
+	</style>
+</head>
+
+<body>
+	<div id="gallery"></div>
+</body>
+
+<script src="/src/Toolbox.js"></script>
+<script>
+
+var imageData;
+Toolbox.on("input",function(sources){
+
+	var gallery = document.getElementById("gallery");
+	gallery.innerHTML = '';
+
+	for(var i=0;i<sources.length;i++){
+		
+		var img = new Image();
+		img.src = sources[i];
+		gallery.appendChild(img);
+
+		img.style.cursor = "pointer";
+		img.onclick = (function(index){
+			return function(){
+				Toolbox.tellParent("output",index);
+			};
+		})(i);
+
+	}
+
+});
+
+
+</script>

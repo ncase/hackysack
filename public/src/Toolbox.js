@@ -147,6 +147,7 @@ var App = function(src){
 	app.open = function(data,callback){
 
 		// Popup
+		document.body.style.overflow = "hidden";
 		Mixin({
 			
 			width:"100%", height:"100%",
@@ -164,7 +165,8 @@ var App = function(src){
 
 		// Output
 		app.once("output",function(){
-			Mixin({ display:"none" },iframe.style);
+			document.body.style.overflow = "";
+			iframe.style.display="none";
 			callback.apply(this,arguments);
 		});
 
